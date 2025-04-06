@@ -6,12 +6,15 @@ import {
   ArcElement,
   Tooltip,
   Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
 } from 'chart.js'
-import { Doughnut } from 'react-chartjs-2'
+import { Doughnut, Bar } from 'react-chartjs-2'
 import Link from 'next/link'
+import 'animate.css'
 
-
-ChartJS.register(ArcElement, Tooltip, Legend)
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
 
 type Sheep = {
   id: string
@@ -23,17 +26,27 @@ type Sheep = {
   notes?: string
 }
 
+type FeedEntry = {
+  category: string
+  stockKg: number
+}
+
 export default function HomePage() {
   const [sheepList, setSheepList] = useState<Sheep[]>([])
+  const [feedData, setFeedData] = useState<FeedEntry[]>([])
 
   useEffect(() => {
-    async function loadDummyData() {
-      const res = await fetch('/sheep-data.json')
-      const data = await res.json()
-      setSheepList(data)
+    async function fetchData() {
+      const resSheep = await fetch('/sheep-data.json')
+      const sheep = await resSheep.json()
+      setSheepList(sheep)
+
+      const resFeed = await fetch('/feed-data.json')
+      const feed = await resFeed.json()
+      setFeedData(feed)
     }
 
-    loadDummyData()
+    fetchData()
   }, [])
 
   const total = sheepList.length
@@ -54,30 +67,52 @@ export default function HomePage() {
     ],
   }
 
+  const feedBarChart = {
+    labels: feedData.map(f => f.category),
+    datasets: [
+      {
+        label: 'Feed Stock (kg)',
+        data: feedData.map(f => f.stockKg),
+        backgroundColor: '#38bdf8',
+        borderRadius: 6,
+      },
+    ],
+  }
+
   return (
-    <main className="min-h-screen bg-[#fdf6ec] text-[#3e3a36]">
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center">🐑 Desja Leigh Stoet</h1>
+    <main className="min-h-screen bg-[#fdf6ec] text-[#3e3a36] animate__animated animate__fadeIn">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12">
+        <h1 className="text-4xl font-bold text-center">🐑 Desja Leigh Stoet</h1>
 
         {/* STAT CARDS */}
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 animate__animated animate__fadeInUp">
           <StatCard title="Total Sheep" value={total} icon="🐑" />
           <StatCard title="Sold" value={sold} icon="💸" />
           <StatCard title="Healthy" value={healthy} icon="✅" />
           <StatCard title="Sick" value={sick} icon="❌" />
         </section>
 
-        {/* CHART */}
-        <section className="bg-white rounded-xl shadow-md p-4 sm:p-6 mx-auto w-full max-w-md sm:max-w-3xl">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-center">Health Distribution</h2>
-          <Doughnut data={chartData} />
+        {/* CHARTS */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center animate__animated animate__fadeInUp">
+          <div className="bg-white rounded-xl shadow p-6 max-w-sm mx-auto">
+            <h2 className="text-lg font-semibold mb-4 text-center">Health Distribution</h2>
+            <div className="h-60">
+              <Doughnut data={chartData} />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow p-6 max-w-lg mx-auto">
+            <h2 className="text-lg font-semibold mb-4 text-center">Feed Stock by Category</h2>
+            <div className="h-60">
+              <Bar data={feedBarChart} options={{ responsive: true, maintainAspectRatio: false }} />
+            </div>
+          </div>
         </section>
 
         {/* TOOL LINKS */}
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-center">Farm Management Tools</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+        <section className="animate__animated animate__fadeInUp">
+          <h2 className="text-2xl font-semibold mb-4 text-center">Farm Management Tools</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <ToolCard
               title="Herd Health Monitoring"
               description="Track sheep health, treatments, and alerts."
@@ -101,6 +136,11 @@ export default function HomePage() {
             />
           </div>
         </section>
+
+        {/* FOOTER */}
+        <footer className="text-center text-sm text-gray-500 pt-12 pb-6 border-t border-gray-200">
+          © {new Date().getFullYear()} Desja Leigh Stoet — Built with love by Diego Allies
+        </footer>
       </div>
     </main>
   )
@@ -134,10 +174,10 @@ function ToolCard({
   return (
     <Link
       href={href}
-      className={`block p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition ${color}`}
+      className={`block p-5 sm:p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 ${color}`}
     >
-      <div className="text-3xl sm:text-4xl mb-2">{icon}</div>
-      <h3 className="text-base sm:text-lg font-semibold mb-1">{title}</h3>
+      <div className="text-4xl mb-2">{icon}</div>
+      <h3 className="text-lg font-semibold mb-1">{title}</h3>
       <p className="text-sm text-gray-700">{description}</p>
     </Link>
   )
