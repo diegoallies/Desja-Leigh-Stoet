@@ -15,15 +15,26 @@ export type Sheep = {
 export function useSheepStore() {
   const [sheepList, setSheepList] = useState<Sheep[]>([])
 
-  // Load from localStorage
+  // Load from localStorage or fallback to JSON
   useEffect(() => {
     const stored = localStorage.getItem('sheep')
-    if (stored) setSheepList(JSON.parse(stored))
+    if (stored) {
+      setSheepList(JSON.parse(stored))
+    } else {
+      fetch('/sheep-data.json')
+        .then(res => res.json())
+        .then(data => {
+          setSheepList(data)
+          localStorage.setItem('sheep', JSON.stringify(data))
+        })
+    }
   }, [])
 
-  // Save to localStorage on change
+  // Save to localStorage when sheepList changes
   useEffect(() => {
-    localStorage.setItem('sheep', JSON.stringify(sheepList))
+    if (sheepList.length > 0) {
+      localStorage.setItem('sheep', JSON.stringify(sheepList))
+    }
   }, [sheepList])
 
   function addSheep(sheep: Sheep) {

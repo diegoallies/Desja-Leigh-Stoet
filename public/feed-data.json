@@ -1,0 +1,33 @@
+[
+    {
+      "id": "1",
+      "category": "Lambs",
+      "feedType": "Starter Pellets",
+      "quantityPerSheepKg": 0.5,
+      "frequency": "Twice Daily",
+      "totalSheep": 15,
+      "stockKg": 40,
+      "costPerKg": 6
+    },
+    {
+      "id": "2",
+      "category": "Ewes",
+      "feedType": "Lucerne Hay",
+      "quantityPerSheepKg": 1.8,
+      "frequency": "Once Daily",
+      "totalSheep": 30,
+      "stockKg": 100,
+      "costPerKg": 4
+    },
+    {
+      "id": "3",
+      "category": "Rams",
+      "feedType": "Grain Mix",
+      "quantityPerSheepKg": 1.2,
+      "frequency": "Every 2 Days",
+      "totalSheep": 5,
+      "stockKg": 20,
+      "costPerKg": 5.5
+    }
+  ]
+  
