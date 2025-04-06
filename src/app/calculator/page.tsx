@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSheepStore, Sheep } from '../lib/useSheepStore'
 
 export default function LivestockCalculatorPage() {
