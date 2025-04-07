@@ -16,38 +16,45 @@ type Sheep = {
 export default function SheepDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const sheepId =
-    typeof params?.id === 'string'
-      ? params.id
-      : Array.isArray(params?.id)
-      ? params.id[0]
-      : ''
+  const sheepId = typeof params?.id === 'string' ? params.id : params?.id[0] || ''
 
   const [sheep, setSheep] = useState<Sheep | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!sheepId) return;
+
     async function loadSheepData() {
-      const res = await fetch('/sheep-data.json')
-      const data: Sheep[] = await res.json()
-      const found = data.find((s) => s.id === sheepId)
-      if (found) setSheep({ ...found })
-      setLoading(false)
+      try {
+        const res = await fetch('/sheep-data.json')
+        if (!res.ok) throw new Error('Failed to fetch sheep data')
+        const data: Sheep[] = await res.json()
+        const found = data.find((s) => s.id === sheepId)
+
+        if (found) {
+          setSheep(found)
+        } else {
+          setError(`No sheep found with ID: ${sheepId}`)
+        }
+      } catch (err) {
+        setError('Failed to load sheep data. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
     }
 
-    if (sheepId) {
-      loadSheepData()
-    }
+    loadSheepData()
   }, [sheepId])
 
   if (loading) {
     return <p className="p-10 text-center text-gray-500 animate-pulse">Loading sheep info...</p>
   }
 
-  if (!sheep) {
+  if (error) {
     return (
       <div className="p-10 text-center text-red-600">
-        ❌ Sheep not found with ID: <code>{sheepId}</code>
+        ❌ {error}
         <br />
         <button
           onClick={() => router.push('/sheep')}
@@ -81,34 +88,34 @@ export default function SheepDetailPage() {
 
         <div className="bg-white shadow-xl rounded-xl p-6 space-y-6 transition duration-300 hover:shadow-2xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Tag" value={sheep.tag} onChange={(v) => setSheep({ ...sheep, tag: v })} />
-            <Input label="Breed" value={sheep.breed} onChange={(v) => setSheep({ ...sheep, breed: v })} />
+            <Input label="Tag" value={sheep.tag} onChange={(v) => setSheep((prev) => prev ? { ...prev, tag: v } : prev)} />
+            <Input label="Breed" value={sheep.breed} onChange={(v) => setSheep((prev) => prev ? { ...prev, breed: v } : prev)} />
             <Select
               label="Gender"
               value={sheep.gender}
               options={['Male', 'Female']}
-              onChange={(v) => setSheep({ ...sheep, gender: v as any })}
+              onChange={(v) => setSheep((prev) => prev ? { ...prev, gender: v as any } : prev)}
             />
             <Select
               label="Status"
               value={sheep.status}
               options={['Healthy', 'Sick', 'Sold', 'Dead']}
-              onChange={(v) => setSheep({ ...sheep, status: v as Sheep['status'] })}
+              onChange={(v) => setSheep((prev) => prev ? { ...prev, status: v as Sheep['status'] } : prev)}
             />
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-1">Date of Birth</label>
               <input
                 type="date"
                 value={sheep.dob}
-                onChange={(e) => setSheep({ ...sheep, dob: e.target.value })}
+                onChange={(e) => setSheep((prev) => prev ? { ...prev, dob: e.target.value } : prev)}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
               />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-1">Notes</label>
               <textarea
-                value={sheep.notes}
-                onChange={(e) => setSheep({ ...sheep, notes: e.target.value })}
+                value={sheep.notes || ''}
+                onChange={(e) => setSheep((prev) => prev ? { ...prev, notes: e.target.value } : prev)}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                 rows={3}
               />
